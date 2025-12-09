@@ -94,9 +94,9 @@ async function fetchPnL24h(){
   }
 }
 
-// Load immediately, then refresh every 120 seconds
+// Load immediately, then refresh every 60 seconds
 fetchPnL24h();
-setInterval(fetchPnL24h, 120000);
+setInterval(fetchPnL24h, 60000);
 </script>
 </body>
 </html>
