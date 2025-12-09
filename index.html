@@ -9,28 +9,28 @@
   body{
     display:flex;align-items:center;justify-content:center;
     background:#fff;font-family:-apple-system,BlinkMacSystemFont,
-    "Segoe UI","Roboto","Helvetica Neue",Arial,sans-serif;
+    "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
   }
   #pnl{
-    font-size:clamp(72px,18vw,220px); /* 超大，自适应 */
+    font-size:clamp(72px,18vw,220px); /* Extra large, adaptive */
     font-weight:800; letter-spacing:1px;
     line-height:1; user-select:none;
   }
-  .pos{ color:#12b886; }   /* 绿 */
-  .neg{ color:#ef4444; }   /* 红 */
-  .muted{ color:#111; }    /* 默认黑体 */
+  .pos{ color:#12b886; } /* Green */
+  .neg{ color:#ef4444; } /* Red */
+  .muted{ color:#111; } /* Default boldface */
 </style>
 </head>
 <body>
-  <div id="pnl" class="muted">加载中…</div>
+  <div id="pnl" class="muted">Loading…</div>
 
 <script>
-const VAULT = "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303";
+const VAULT = "0x07fd993f0fa3a185f7207adccd29f7a87404689d";
 const API = "https://api.hyperliquid.xyz/info";
 const EL = document.getElementById("pnl");
 
 function toNum(x){
-  // 把可能的字符串/带逗号数字都转成 Number
+  // Convert all possible strings/numbers with commas to Number
   if (x == null) return NaN;
   if (typeof x === "number") return x;
   if (typeof x === "string") return Number(x.replace(/,/g,"").trim());
@@ -38,10 +38,14 @@ function toNum(x){
 }
 
 function renderNumber(n){
-  // 正数加 + 号；整数显示（去小数），千分位
-  const int = Math.trunc(n); // 你要纯数字可改成 Math.round/Math.floor
-  const sign = int > 0 ? "+" : ""; // 负数自带 -
-  const text = `${sign}¥${int.toLocaleString("zh-CN")}`;
+  // Add a plus sign to positive numbers; display integers (remove decimals), thousands place.
+  const int = Math.trunc(n); // If you want pure numbers, you can change it to Math.round/Math.floor
+  const sign = int > 0 ? "+" : ""; // Negative numbers are included by default -
+  const text = `${sign}${int.toLocaleString("en-US", {
+  style: "currency",
+  currency: "USD"
+})}`;
+
 
   EL.textContent = text;
   EL.classList.remove("pos","neg","muted");
@@ -57,8 +61,8 @@ async function fetchPnL24h(){
     });
     const data = await res.json();
 
-    // —— 从 portfolio → "day" → pnlHistory 提取 —— 
-    // portfolio 形如：[ ["day",{ pnlHistory: [[t,v],[t,v],...] }], ["week",{...}], ... ]
+    // Extract from portfolio → "day" → pnlHistory //
+    // Portfolio format: [ ["day",{ pnlHistory: [[t,v],[t,v],...] }], ["week",{...}], ... ]
     const portfolio = Array.isArray(data?.portfolio) ? data.portfolio : [];
     const dayEntry = portfolio.find(it => Array.isArray(it) && it[0] === "day");
     const dayBlock = dayEntry && dayEntry[1] ? dayEntry[1] : {};
@@ -75,22 +79,22 @@ async function fetchPnL24h(){
       }
     }
 
-    // 兜底：如果结构变化/取不到，给出可观察的提示
-    EL.textContent = "数据错误";
+    // Backup: If the structure changes/cannot be retrieved, provide an observable hint.
+    EL.textContent = "Data error";
     EL.classList.remove("pos","neg");
     EL.classList.add("muted");
-    // 打开下行可在控制台看到原始结构，便于排查
+    // Opening the output will allow you to see the original structure in the console, making troubleshooting easier.
     // console.log("Raw data:", data);
 
   }catch(err){
-    EL.textContent = "加载失败";
+    EL.textContent = "Loading failed";
     EL.classList.remove("pos","neg");
     EL.classList.add("muted");
     // console.error(err);
   }
 }
 
-// 立即加载一次，然后每 120 秒刷新
+// Load immediately, then refresh every 120 seconds
 fetchPnL24h();
 setInterval(fetchPnL24h, 120000);
 </script>
